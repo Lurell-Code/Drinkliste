@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Getränkeliste Gruppe</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      background-color: #f2f2f7; 
+      color: #1c1c1e;
+      padding: 12px; 
+      margin: 0; 
+      max-width: 500px; 
+      margin-left: auto; 
+      margin-right: auto; 
+      font-size: 16px;
+    }
+
+    h2 { 
+      text-align: center;
+      margin: 10px 0 15px 0;
+      font-size: 1.4rem;
+      color: #1c1c1e;
+    }
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      color: #1c1c1e;
+    }
+    
+    /* Eingabebereich für neue Mitglieder */
+    .add-member-box { 
+      background: white; 
+      border-radius: 14px; 
+      padding: 12px; 
+      margin-bottom: 16px; 
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); 
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-member-box input { 
+      flex: 1; 
+      padding: 12px; 
+      border: 1px solid #e5e5ea; 
+      border-radius: 10px; 
+      font-size: 1rem; 
+      outline: none;
+      background-color: #f9f9fb;
+    }
+    .add-member-box input:focus {
+      border-color: #007aff;
+      background-color: #fff;
+    }
+    
+    /* Mitglieder-Karten */
+    .card { 
+      background: white; 
+      border-radius: 16px; 
+      padding: 16px; 
+      margin-bottom: 14px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+    }
+    .card-header { 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px; 
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .name { 
+      font-weight: 700; 
+      font-size: 1.15rem; 
+      color: #1c1c1e; 
+    }
+    .total-price { 
+      font-size: 1.2rem; 
+      color: #ff3b30; 
+      font-weight: 700; 
+    }
+    
+    /* Detailangaben & Buttons */
+    .drink-row { 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px; 
+    }
+    .drink-label { 
+      font-size: 1rem; 
+      color: #3a3a3c; 
+      font-weight: 500;
+    }
+    .drink-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count { 
+      font-weight: 700; 
+      font-size: 1.1rem;
+      min-width: 32px;
+      text-align: right;
+    }
+    
+    /* Buttons Touch-Optimiert */
+    .btn { 
+      color: white; 
+      border: none; 
+      border-radius: 10px; 
+      padding: 10px 16px; 
+      font-size: 1rem; 
+      font-weight: 600; 
+      cursor: pointer; 
+      touch-action: manipulation;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .btn-add { 
+      background-color: #34c759; 
+      min-width: 54px;
+      min-height: 44px;
+    }
+    .btn-action { 
+      background-color: #007aff; 
+      min-height: 44px;
+      padding: 0 16px;
+      white-space: nowrap;
+    }
+    
+    /* Löschen-Button */
+    .btn-delete {
+      background: #ffe5e5;
+      border: none;
+      color: #ff3b30;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      min-height: 36px;
+    }
+
+    .btn-checkout { 
+      background-color: #ff3b30; 
+      width: 100%; 
+      padding: 14px; 
+      font-size: 1.05rem; 
+      margin-top: 10px; 
+      margin-bottom: 20px; 
+      border-radius: 14px;
+      box-shadow: 0 4px 10px rgba(255, 59, 48, 0.2);
+    }
+
+    /* Info-Boxen (Verlauf & Abrechnungen) */
+    .box { 
+      background: white; 
+      border-radius: 16px; 
+      padding: 16px; 
+      margin-top: 16px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+    }
+    .history-list { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+      max-height: 180px; 
+      overflow-y: auto; 
+    }
+    .history-item { 
+      padding: 10px 0; 
+      border-bottom: 1px solid #f2f2f7; 
+      font-size: 0.9rem; 
+      color: #636366; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-system-event {
+      color: #ff3b30;
+      font-style: italic;
+    }
+    
+    /* Abrechnungseintrag & Bezahl-Status */
+    .bill-item {
+      background: #f9f9fb;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .bill-header {
+      font-weight: 700;
+      color: #1c1c1e;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #e5e5ea;
+      padding-bottom: 6px;
+    }
+    .bill-detail {
+      font-size: 0.9rem;
+      color: #3a3a3c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .bill-detail.paid .bill-detail-left {
+      color: #34c759;
+      text-decoration: line-through;
+    }
+
+    .pay-checkbox-label {
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+      padding: 6px 10px;
+      background: #fff;
+      border: 1px solid #d1d1d6;
+      border-radius: 8px;
+    }
+
+    .pay-checkbox-label input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .empty-state {
+      color: #8e8e93;
+      font-style: italic;
+      text-align: center;
+      padding: 12px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🍺 Getränkeliste</h2>
+
+  <!-- Mitglied hinzufügen -->
+  <div class="add-member-box">
+    <input type="text" id="new-member-name" placeholder="Name eintragen...">
+    <button class="btn btn-action" onclick="addMember()">+ Hinzufügen</button>
+  </div>
+
+  <!-- Liste der Mitglieder -->
+  <div id="members-list"></div>
+
+  <!-- Abrechnungs-Button -->
+  <button class="btn btn-checkout" onclick="performCheckout()">🧾 Abrechnung durchführen & Zurücksetzen</button>
+
+  <!-- Gespeicherte Abrechnungen -->
+  <div class="box">
+    <h3>📂 Gespeicherte Abrechnungen</h3>
+    <div id="settlements-list">
+      <div class="empty-state">Noch keine Abrechnungen vorhanden.</div>
+    </div>
+  </div>
+
+  <!-- Verlauf -->
+  <div class="box">
+    <h3>📋 Verlauf</h3>
+    <ul id="history-list" class="history-list">
+      <li class="history-item">
+        <span>Noch keine Buchungen vorhanden.</span>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    const DRINKS = {
+      kaffee: { name: "Kaffee", price: 0.40 },
+      spezi: { name: "Spezi", price: 1.00 }
+    };
+
+    let members = [];
+    let historyLog = [];
+    let savedSettlements = [];
+
+    function addMember() {
+      const input = document.getElementById('new-member-name');
+      const name = input.value.trim();
+      
+      if (name !== "") {
+        members.push({
+          id: Date.now(),
+          name: name,
+          kaffee: 0,
+          spezi: 0
+        });
+        input.value = "";
+        renderList();
+      }
+    }
+
+    function removeMember(memberId) {
+      const member = members.find(m => m.id === memberId);
+      if (member) {
+        if (confirm(`Möchtest du "${member.name}" wirklich löschen?`)) {
+          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          historyLog.unshift({
+            type: "system",
+            text: `Profil "${member.name}" gelöscht.`,
+            time: timestamp
+          });
+
+          members = members.filter(m => m.id !== memberId);
+          renderList();
+          renderHistory();
+        }
+      }
+    }
+
+    function addDrink(memberId, drinkKey) {
+      const member = members.find(m => m.id === memberId);
+      if (member) {
+        member[drinkKey]++;
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        historyLog.unshift({
+          type: "drink",
+          name: member.name,
+          drink: DRINKS[drinkKey].name,
+          price: DRINKS[drinkKey].price,
+          time: timestamp
+        });
+
+        renderList();
+        renderHistory();
+      }
+    }
+
+    function performCheckout() {
+      if (members.length === 0) {
+        alert("Es gibt keine Mitglieder für eine Abrechnung.");
+        return;
+      }
+
+      const totalAmountAll = members.reduce((sum, m) => sum + (m.kaffee * DRINKS.kaffee.price) + (m.spezi * DRINKS.spezi.price), 0);
+      if (totalAmountAll === 0) {
+        alert("Es gibt derzeit keine offenen Beträge abzurechnen.");
+        return;
+      }
+
+      if (!confirm("Möchtest du die Abrechnung durchführen? Die Zähler werden danach auf 0 zurückgesetzt.")) {
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString() + " um " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " Uhr";
+
+      const settlement = {
+        id: Date.now(),
+        date: dateStr,
+        items: []
+      };
+
+      members.forEach(member => {
+        const amount = (member.kaffee * DRINKS.kaffee.price) + (member.spezi * DRINKS.spezi.price);
+        if (amount > 0) {
+          settlement.items.push({
+            id: Date.now() + Math.random(),
+            name: member.name,
+            kaffee: member.kaffee,
+            spezi: member.spezi,
+            total: amount,
+            paid: false
+          });
+        }
+
+        member.kaffee = 0;
+        member.spezi = 0;
+      });
+
+      savedSettlements.unshift(settlement);
+
+      renderList();
+      renderSettlements();
+      alert("Abrechnung erfolgreich erstellt und Zähler zurückgesetzt!");
+    }
+
+    function togglePaid(settlementId, itemId) {
+      const settlement = savedSettlements.find(s => s.id === settlementId);
+      if (settlement) {
+        const item = settlement.items.find(i => i.id === itemId);
+        if (item) {
+          item.paid = !item.paid;
+          renderSettlements();
+        }
+      }
+    }
+
+    function renderList() {
+      const container = document.getElementById('members-list');
+      container.innerHTML = '';
+
+      if (members.length === 0) {
+        container.innerHTML = '<div class="empty-state">Noch keine Mitglieder eingetragen. Trage oben den ersten Namen ein!</div>';
+        return;
+      }
+
+      members.forEach(member => {
+        const totalAmount = (member.kaffee * DRINKS.kaffee.price) + (member.spezi * DRINKS.spezi.price);
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="header-left">
+              <button class="btn-delete" onclick="removeMember(${member.id})" title="Mitglied entfernen">🗑️</button>
+              <span class="name">${member.name}</span>
+            </div>
+            <span class="total-price">${totalAmount.toFixed(2).replace('.', ',')} €</span>
+          </div>
+          
+          <div class="drink-row">
+            <span class="drink-label">☕ Kaffee (0,40 €)</span>
+            <div class="drink-action">
+              <span class="count">${member.kaffee}x</span>
+              <button class="btn btn-add" onclick="addDrink(${member.id}, 'kaffee')">+1</button>
+            </div>
+          </div>
+
+          <div class="drink-row">
+            <span class="drink-label">🥤 Spezi (1,00 €)</span>
+            <div class="drink-action">
+              <span class="count">${member.spezi}x</span>
+              <button class="btn btn-add" onclick="addDrink(${member.id}, 'spezi')">+1</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderHistory() {
+      const historyContainer = document.getElementById('history-list');
+      if (historyLog.length === 0) return;
+
+      historyContainer.innerHTML = '';
+      historyLog.forEach(entry => {
+        const item = document.createElement('li');
+        item.className = 'history-item';
+        
+        if (entry.type === "system") {
+          item.innerHTML = `
+            <span class="history-system-event">🗑️ ${entry.text}</span>
+            <span>${entry.time} Uhr</span>
+          `;
+        } else {
+          item.innerHTML = `
+            <span><b>${entry.name}</b>: ${entry.drink} (+${entry.price.toFixed(2).replace('.', ',')} €)</span>
+            <span>${entry.time} Uhr</span>
+          `;
+        }
+        historyContainer.appendChild(item);
+      });
+    }
+
+    function renderSettlements() {
+      const container = document.getElementById('settlements-list');
+      if (savedSettlements.length === 0) {
+        container.innerHTML = '<div class="empty-state">Noch keine Abrechnungen vorhanden.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      savedSettlements.forEach(settlement => {
+        const billBox = document.createElement('div');
+        billBox.className = 'bill-item';
+        
+        let detailsHtml = `<div class="bill-header">Abrechnung vom ${settlement.date}</div>`;
+        settlement.items.forEach(item => {
+          const isPaid = item.paid ? 'paid' : '';
+          const isChecked = item.paid ? 'checked' : '';
+          
+          detailsHtml += `
+            <div class="bill-detail ${isPaid}">
+              <div class="bill-detail-left">
+                <b>${item.name}</b> (${item.kaffee}x K, ${item.spezi}x S): <b>${item.total.toFixed(2).replace('.', ',')} €</b>
+              </div>
+              <label class="pay-checkbox-label">
+                <input type="checkbox" ${isChecked} onchange="togglePaid(${settlement.id}, ${item.id})"> Bezahlt
+              </label>
+            </div>
+          `;
+        });
+
+        billBox.innerHTML = detailsHtml;
+        container.appendChild(billBox);
+      });
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
